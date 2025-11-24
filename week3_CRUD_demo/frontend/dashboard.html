@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Clinic Appointment System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <h2>Clinic Appointment System</h2>
+            </div>
+            <div class="navbar-menu">
+                <span id="userName"></span>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <div class="dashboard-content">
+            <div class="welcome-section">
+                <h1>Welcome, <span id="userFullName"></span></h1>
+                <p class="role-badge-large" id="userRole"></p>
+            </div>
+
+            <div class="info-card">
+                <h3>Account Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Name:</label>
+                        <span id="displayName"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Email:</label>
+                        <span id="displayEmail"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Role:</label>
+                        <span id="displayRole"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions-section">
+                <h3>Quick Actions</h3>
+                <div class="action-buttons">
+                    <button class="btn-action" onclick="alert('This feature is coming soon!')">
+                        View Appointments
+                    </button>
+                    <button class="btn-action" onclick="alert('This feature is coming soon!')">
+                        Schedule Appointment
+                    </button>
+                    <button class="btn-action" onclick="alert('This feature is coming soon!')">
+                        View Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Check if user is logged in
+        const token = localStorage.getItem('authToken');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token || !user.name) {
+            window.location.href = 'index.html';
+        } else {
+            // Redirect based on role
+            if (user.role === 'dokter') {
+                window.location.href = 'dokter-schedules.html';
+            } else if (user.role === 'pasien') {
+                window.location.href = 'pasien-appointments.html';
+            } else {
+                // Display user information for other roles
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userFullName').textContent = user.name;
+                document.getElementById('userRole').textContent = user.role === 'pasien' ? 'Pasien' : 'Dokter';
+                document.getElementById('displayName').textContent = user.name;
+                document.getElementById('displayEmail').textContent = user.email;
+                document.getElementById('displayRole').textContent = user.role === 'pasien' ? 'Pasien' : 'Dokter';
+            }
+        }
+    </script>
+</body>
+</html>

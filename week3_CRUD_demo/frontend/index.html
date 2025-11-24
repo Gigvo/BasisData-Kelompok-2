@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Appointment System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="welcome-box">
+            <h1>Welcome to Clinic Appointment System</h1>
+            <p>Please select your role to continue</p>
+
+            <div class="role-selection">
+                <div class="role-card" onclick="selectRole('pasien')">
+                    <div class="role-icon">👤</div>
+                    <h2>Pasien</h2>
+                    <p>Sign in or register as a patient</p>
+                </div>
+
+                <div class="role-card" onclick="selectRole('dokter')">
+                    <div class="role-icon">👨‍⚕️</div>
+                    <h2>Dokter</h2>
+                    <p>Sign in or register as a doctor</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function selectRole(role) {
+            localStorage.setItem('selectedRole', role);
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

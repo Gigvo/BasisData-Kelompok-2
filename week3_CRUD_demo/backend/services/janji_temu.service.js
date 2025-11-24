@@ -36,3 +36,102 @@ module.exports.addOrEditJanjiTemu = async (obj, id = 0) => {
   );
   return affectedRows;
 };
+
+// Get appointments by doctor ID
+module.exports.getAppointmentsByDokter = async (dokter_id) => {
+  const [rows] = await db.query(`
+    SELECT
+      jt.janjitemu_id,
+      jt.tanggal_janji,
+      jt.keluhan,
+      jt.status,
+      jt.createdAt,
+      jt.updatedAt,
+      p.pasien_id,
+      p.nama_pasien,
+      p.jenis_kelamin,
+      p.no_telepon AS pasien_telepon,
+      jd.jadwal_id,
+      jd.hari,
+      jd.waktu_mulai,
+      jd.waktu_selesai
+    FROM janji_temu jt
+    INNER JOIN pasien p ON jt.pasien_id = p.pasien_id
+    INNER JOIN jadwal_dokter jd ON jt.jadwal_id = jd.jadwal_id
+    INNER JOIN menetapkan m ON jd.jadwal_id = m.jadwal_id
+    WHERE m.dokter_id = ?
+    ORDER BY jt.tanggal_janji DESC, jd.waktu_mulai DESC
+  `, [dokter_id]);
+  return rows;
+};
+
+// Get appointments by patient ID
+module.exports.getAppointmentsByPasien = async (pasien_id) => {
+  const [rows] = await db.query(`
+    SELECT
+      jt.janjitemu_id,
+      jt.tanggal_janji,
+      jt.keluhan,
+      jt.status,
+      jt.createdAt,
+      jt.updatedAt,
+      jd.jadwal_id,
+      jd.hari,
+      jd.waktu_mulai,
+      jd.waktu_selesai,
+      d.dokter_id,
+      d.nama_dokter,
+      d.spesialisasi
+    FROM janji_temu jt
+    INNER JOIN jadwal_dokter jd ON jt.jadwal_id = jd.jadwal_id
+    INNER JOIN menetapkan m ON jd.jadwal_id = m.jadwal_id
+    INNER JOIN dokter d ON m.dokter_id = d.dokter_id
+    WHERE jt.pasien_id = ?
+    ORDER BY jt.tanggal_janji DESC, jd.waktu_mulai DESC
+  `, [pasien_id]);
+  return rows;
+};
+
+// Auto-complete past appointments
+module.exports.autoCompletePastAppointments = async () => {
+  try {
+    // Get all appointments that are past their date and time
+    const [appointments] = await db.query(`
+      SELECT
+        jt.janjitemu_id,
+        jt.jadwal_id,
+        jt.tanggal_janji,
+        jt.status,
+        jd.waktu_selesai
+      FROM janji_temu jt
+      INNER JOIN jadwal_dokter jd ON jt.jadwal_id = jd.jadwal_id
+      WHERE jt.status IN ('Menunggu', 'Dikonfirmasi')
+      AND CONCAT(jt.tanggal_janji, ' ', jd.waktu_selesai) < NOW()
+    `);
+
+    let completedCount = 0;
+    const jadwalService = require("./jadwal_dokter.service");
+
+    // Update each past appointment to 'Selesai'
+    for (const appointment of appointments) {
+      const [result] = await db.query(
+        "UPDATE janji_temu SET status = 'Selesai' WHERE janjitemu_id = ?",
+        [appointment.janjitemu_id]
+      );
+
+      if (result.affectedRows > 0) {
+        completedCount++;
+        // Update schedule status back to 'Tersedia'
+        await jadwalService.updateScheduleStatus(appointment.jadwal_id, 'Tersedia');
+      }
+    }
+
+    return {
+      total: appointments.length,
+      completed: completedCount
+    };
+  } catch (error) {
+    console.error("Error auto-completing appointments:", error);
+    throw error;
+  }
+};

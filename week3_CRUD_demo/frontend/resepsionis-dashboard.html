@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resepsionis Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <h2>Clinic System - Resepsionis</h2>
+            </div>
+            <div class="navbar-menu">
+                <span id="userName"></span>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <div class="dashboard-content">
+            <div class="welcome-section">
+                <h1>Welcome, <span id="userFullName"></span></h1>
+                <p class="role-badge-large">Resepsionis</p>
+            </div>
+
+            <div class="info-card">
+                <h3>Resepsionis Access</h3>
+                <p>Manage appointments and assist patients with their needs.</p>
+            </div>
+
+            <div class="actions-section">
+                <h3>Quick Actions</h3>
+                <div class="action-buttons">
+                    <button class="btn-action" onclick="alert('Feature coming soon!')">
+                        View Appointments
+                    </button>
+                    <button class="btn-action" onclick="alert('Feature coming soon!')">
+                        Register New Patient
+                    </button>
+                    <button class="btn-action" onclick="alert('Feature coming soon!')">
+                        Check Schedule
+                    </button>
+                    <button class="btn-action" onclick="alert('Feature coming soon!')">
+                        Patient Records
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        const token = localStorage.getItem('authToken');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        // Check if user is logged in as resepsionis (but not admin)
+        if (!token || !user.name || user.role !== 'resepsionis') {
+            alert('Unauthorized access.');
+            window.location.href = 'index.html';
+        } else if (user.isAdmin) {
+            // Redirect admin to admin dashboard
+            window.location.href = 'admin-dashboard.html';
+        } else {
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userFullName').textContent = user.name;
+        }
+    </script>
+</body>
+</html>

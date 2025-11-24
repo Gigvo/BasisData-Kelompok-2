@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Clinic Appointment System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-box signup-box">
+            <h1>Sign Up</h1>
+            <p class="role-badge" id="roleBadge"></p>
+
+            <!-- Pasien Form -->
+            <form id="signupFormPasien" style="display: none;">
+                <div class="form-group">
+                    <label for="nama_pasien">Nama Lengkap</label>
+                    <input type="text" id="nama_pasien" name="nama_pasien" required placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="tanggal_lahir">Tanggal Lahir</label>
+                    <input type="date" id="tanggal_lahir" name="tanggal_lahir" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="jenis_kelamin">Jenis Kelamin</label>
+                    <select id="jenis_kelamin" name="jenis_kelamin" required>
+                        <option value="">Select gender</option>
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="alamat_pasien">Alamat</label>
+                    <textarea id="alamat_pasien" name="alamat" required placeholder="Enter your address" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="no_telepon_pasien">No. Telepon</label>
+                    <input type="tel" id="no_telepon_pasien" name="no_telepon" required placeholder="Enter your phone number">
+                </div>
+
+                <div class="form-group">
+                    <label for="email_pasien">Email</label>
+                    <input type="email" id="email_pasien" name="email" required placeholder="Enter your email">
+                </div>
+
+                <div class="form-group">
+                    <label for="password_pasien">Password</label>
+                    <input type="password" id="password_pasien" name="password" required placeholder="Enter your password" minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password_pasien">Confirm Password</label>
+                    <input type="password" id="confirm_password_pasien" required placeholder="Confirm your password" minlength="6">
+                </div>
+
+                <div class="error-message" id="errorMessagePasien"></div>
+
+                <button type="submit" class="btn-primary">Sign Up</button>
+            </form>
+
+            <!-- Dokter Form -->
+            <form id="signupFormDokter" style="display: none;">
+                <div class="form-group">
+                    <label for="nama_dokter">Nama Lengkap</label>
+                    <input type="text" id="nama_dokter" name="nama_dokter" required placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="spesialisasi">Spesialisasi</label>
+                    <input type="text" id="spesialisasi" name="spesialisasi" required placeholder="Enter your specialization">
+                </div>
+
+                <div class="form-group">
+                    <label for="no_telepon_dokter">No. Telepon</label>
+                    <input type="tel" id="no_telepon_dokter" name="no_telepon" required placeholder="Enter your phone number">
+                </div>
+
+                <div class="form-group">
+                    <label for="email_dokter">Email</label>
+                    <input type="email" id="email_dokter" name="email" required placeholder="Enter your email">
+                </div>
+
+                <div class="form-group">
+                    <label for="password_dokter">Password</label>
+                    <input type="password" id="password_dokter" name="password" required placeholder="Enter your password" minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password_dokter">Confirm Password</label>
+                    <input type="password" id="confirm_password_dokter" required placeholder="Confirm your password" minlength="6">
+                </div>
+
+                <div class="error-message" id="errorMessageDokter"></div>
+
+                <button type="submit" class="btn-primary">Sign Up</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Already have an account? <a href="login.html">Login here</a></p>
+                <p><a href="index.html">Change role</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Display selected role and appropriate form
+        const role = localStorage.getItem('selectedRole') || 'pasien';
+        document.getElementById('roleBadge').textContent = `Sign up as ${role === 'pasien' ? 'Pasien' : 'Dokter'}`;
+
+        if (role === 'pasien') {
+            document.getElementById('signupFormPasien').style.display = 'block';
+        } else {
+            document.getElementById('signupFormDokter').style.display = 'block';
+        }
+
+        // Handle Pasien form submission
+        document.getElementById('signupFormPasien').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById('password_pasien').value;
+            const confirmPassword = document.getElementById('confirm_password_pasien').value;
+
+            if (password !== confirmPassword) {
+                showError('errorMessagePasien', 'Passwords do not match');
+                return;
+            }
+
+            const formData = {
+                nama_pasien: document.getElementById('nama_pasien').value,
+                tanggal_lahir: document.getElementById('tanggal_lahir').value,
+                jenis_kelamin: document.getElementById('jenis_kelamin').value,
+                alamat: document.getElementById('alamat_pasien').value,
+                no_telepon: document.getElementById('no_telepon_pasien').value,
+                email: document.getElementById('email_pasien').value,
+                password: password,
+                role: 'pasien'
+            };
+
+            await signup(formData);
+        });
+
+        // Handle Dokter form submission
+        document.getElementById('signupFormDokter').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById('password_dokter').value;
+            const confirmPassword = document.getElementById('confirm_password_dokter').value;
+
+            if (password !== confirmPassword) {
+                showError('errorMessageDokter', 'Passwords do not match');
+                return;
+            }
+
+            const formData = {
+                nama_dokter: document.getElementById('nama_dokter').value,
+                spesialisasi: document.getElementById('spesialisasi').value,
+                no_telepon: document.getElementById('no_telepon_dokter').value,
+                email: document.getElementById('email_dokter').value,
+                password: password,
+                role: 'dokter'
+            };
+
+            await signup(formData);
+        });
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
