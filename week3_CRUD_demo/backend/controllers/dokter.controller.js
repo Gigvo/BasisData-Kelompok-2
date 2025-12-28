@@ -28,18 +28,34 @@ router.delete("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  await service.addOrEditDokter(req.body);
-  res.status(201).send({ message: "Dokter added successfully" });
+  try {
+    await service.addOrEditDokter(req.body);
+    res.status(201).send({ message: "Dokter added successfully" });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      res.status(409).send({ message: "Phone number or email already exists" });
+    } else {
+      res.status(500).send({ message: "Error adding dokter", error: error.message });
+    }
+  }
 });
 
 router.put("/:id", async (req, res) => {
-  const affectedRows = await service.addOrEditDokter(req.body, req.params.id);
-  if (affectedRows === 0) {
-    return res
-      .status(404)
-      .send({ message: "Dokter not found with id: " + req.params.id });
-  } else {
-    res.send({ message: "Dokter updated successfully" });
+  try {
+    const affectedRows = await service.addOrEditDokter(req.body, req.params.id);
+    if (affectedRows === 0) {
+      return res
+        .status(404)
+        .send({ message: "Dokter not found with id: " + req.params.id });
+    } else {
+      res.send({ message: "Dokter updated successfully" });
+    }
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      res.status(409).send({ message: "Phone number or email already exists" });
+    } else {
+      res.status(500).send({ message: "Error updating dokter", error: error.message });
+    }
   }
 });
 

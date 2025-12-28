@@ -22,7 +22,6 @@ module.exports.deleteJanjiTemu = async (id) => {
 };
 
 module.exports.addOrEditJanjiTemu = async (obj, id = 0) => {
-<<<<<<< HEAD
   if (id === 0) {
     const [result] = await db.query(
       "INSERT INTO Janji_Temu (tanggal_janji, keluhan, status, pasien_id, resepsionis_id, jadwal_id) VALUES (?, ?, ?, ?, ?, ?)",
@@ -51,21 +50,6 @@ module.exports.addOrEditJanjiTemu = async (obj, id = 0) => {
     );
     return result.affectedRows;
   }
-=======
-  const [[[{ affectedRows }]]] = await db.query(
-    "CALL janji_temu_add_or_edit(?, ?, ?, ?, ?, ?, ?)",
-    [
-      id,
-      obj.tanggal_janji,
-      obj.keluhan,
-      obj.status,
-      obj.pasien_id,
-      obj.resepsionis_id || null,
-      obj.jadwal_id,
-    ]
-  );
-  return affectedRows;
->>>>>>> ae571796c3e5edb65b3449bf4595636e541618d6
 };
 
 // Get appointments by doctor ID

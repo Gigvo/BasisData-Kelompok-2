@@ -98,6 +98,113 @@ router.delete("/unassign/:jadwal_id", verifyToken, checkRole("dokter"), async (r
   }
 });
 
+// Create a new shift and auto-assign to the creator
+router.post("/create-shift", verifyToken, checkRole("dokter"), async (req, res) => {
+  try {
+    const dokter_id = req.user.id;
+    const { hari, waktu_mulai, waktu_selesai } = req.body;
+
+    // Validate required fields
+    if (!hari || !waktu_mulai || !waktu_selesai) {
+      return res.status(400).send({
+        message: "hari, waktu_mulai, and waktu_selesai are required"
+      });
+    }
+
+    // Validate hari is valid day of week
+    const validDays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    if (!validDays.includes(hari)) {
+      return res.status(400).send({
+        message: `Invalid day. Must be one of: ${validDays.join(', ')}`
+      });
+    }
+
+    // Validate time format (HH:MM or HH:MM:SS)
+    const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])(:[0-5][0-9])?$/;
+    if (!timeRegex.test(waktu_mulai)) {
+      return res.status(400).send({
+        message: "waktu_mulai must be in HH:MM or HH:MM:SS format (e.g., '09:00' or '09:00:00')"
+      });
+    }
+    if (!timeRegex.test(waktu_selesai)) {
+      return res.status(400).send({
+        message: "waktu_selesai must be in HH:MM or HH:MM:SS format (e.g., '17:00' or '17:00:00')"
+      });
+    }
+
+    // Validate logical time range (end time must be after start time)
+    const [startHour, startMin] = waktu_mulai.split(':').map(Number);
+    const [endHour, endMin] = waktu_selesai.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+
+    if (endMinutes <= startMinutes) {
+      return res.status(400).send({
+        message: "waktu_selesai must be after waktu_mulai"
+      });
+    }
+
+    // Create the schedule with status 'Tersedia'
+    const scheduleData = {
+      hari,
+      waktu_mulai,
+      waktu_selesai,
+      status: 'Tersedia'
+    };
+
+    const jadwal_id = await jadwalService.createJadwalDokter(scheduleData);
+
+    if (!jadwal_id) {
+      return res.status(500).send({ message: "Failed to create schedule" });
+    }
+
+    // Automatically assign the shift to the doctor who created it
+    const assignAffectedRows = await menetapkanService.addMenetapkan(dokter_id, jadwal_id);
+
+    if (assignAffectedRows === 0) {
+      console.error(`Failed to auto-assign jadwal_id ${jadwal_id} to dokter_id ${dokter_id}`);
+      return res.status(500).send({
+        message: "Schedule created but failed to assign to doctor"
+      });
+    }
+
+    // Success response
+    res.status(201).send({
+      message: "Shift created and assigned successfully",
+      data: {
+        jadwal_id: jadwal_id,
+        hari: hari,
+        waktu_mulai: waktu_mulai,
+        waktu_selesai: waktu_selesai,
+        status: 'Tersedia',
+        dokter_id: dokter_id
+      }
+    });
+
+  } catch (error) {
+    console.error("Error creating shift:", error);
+
+    // Handle specific database errors
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).send({
+        message: "A schedule with these exact details already exists"
+      });
+    }
+
+    if (error.code === 'ER_BAD_FIELD_ERROR') {
+      return res.status(400).send({
+        message: "Invalid field in request"
+      });
+    }
+
+    // Generic error
+    res.status(500).send({
+      message: "Failed to create shift",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 // Get appointments for logged-in dokter
 router.get("/my-appointments", verifyToken, checkRole("dokter"), async (req, res) => {
   try {
