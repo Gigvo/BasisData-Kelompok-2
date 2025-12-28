@@ -27,9 +27,16 @@ module.exports.signup = async (userData, role) => {
 
     // Insert into respective table
     if (role === "pasien") {
+<<<<<<< HEAD
       const [result] = await db.query(
         "INSERT INTO Pasien (nama_pasien, tanggal_lahir, jenis_kelamin, alamat, no_telepon, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)",
         [
+=======
+      const [[[{ affectedRows }]]] = await db.query(
+        "CALL pasien_add_or_edit(?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+          0, // id = 0 for new record
+>>>>>>> ae571796c3e5edb65b3449bf4595636e541618d6
           userData.nama_pasien,
           userData.tanggal_lahir,
           userData.jenis_kelamin,
@@ -39,11 +46,20 @@ module.exports.signup = async (userData, role) => {
           hashedPassword,
         ]
       );
+<<<<<<< HEAD
       return result.affectedRows;
     } else if (role === "dokter") {
       const [result] = await db.query(
         "INSERT INTO Dokter (nama_dokter, spesialisasi, no_telepon, email, password) VALUES (?, ?, ?, ?, ?)",
         [
+=======
+      return affectedRows;
+    } else if (role === "dokter") {
+      const [[[{ affectedRows }]]] = await db.query(
+        "CALL dokter_add_or_edit(?, ?, ?, ?, ?, ?)",
+        [
+          0, // id = 0 for new record
+>>>>>>> ae571796c3e5edb65b3449bf4595636e541618d6
           userData.nama_dokter,
           userData.spesialisasi,
           no_telepon,
@@ -51,7 +67,11 @@ module.exports.signup = async (userData, role) => {
           hashedPassword,
         ]
       );
+<<<<<<< HEAD
       return result.affectedRows;
+=======
+      return affectedRows;
+>>>>>>> ae571796c3e5edb65b3449bf4595636e541618d6
     }
   } catch (error) {
     throw error;

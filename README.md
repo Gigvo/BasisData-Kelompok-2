@@ -4,6 +4,7 @@ Anggota Kelompok:
 - ERDIZAH GHODI AL HAIDAR (24/537670/PA/22787)
 - Giganius Revo (24/541359/PA/22965)
 - Nicholas Lim (24/543264/PA/23075)
+<<<<<<< HEAD
 
 ---
 
@@ -60,3 +61,5 @@ Gunakan akun berikut untuk login:
 **Resepsionis**
 - Email: `siti.aminah@clinic.com`
 - Password: `password123`
+=======
+>>>>>>> ae571796c3e5edb65b3449bf4595636e541618d6

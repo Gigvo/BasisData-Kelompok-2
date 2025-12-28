@@ -22,6 +22,7 @@ module.exports.deleteJadwalDokter = async (id) => {
 };
 
 module.exports.addOrEditJadwalDokter = async (obj, id = 0) => {
+<<<<<<< HEAD
   if (id === 0) {
     const [result] = await db.query(
       "INSERT INTO Jadwal_Dokter (hari, waktu_mulai, waktu_selesai, status) VALUES (?, ?, ?, ?)",
@@ -35,6 +36,13 @@ module.exports.addOrEditJadwalDokter = async (obj, id = 0) => {
     );
     return result.affectedRows;
   }
+=======
+  const [[[{ affectedRows }]]] = await db.query(
+    "CALL jadwal_dokter_add_or_edit(?, ?, ?, ?, ?)",
+    [id, obj.hari, obj.waktu_mulai, obj.waktu_selesai, obj.status]
+  );
+  return affectedRows;
+>>>>>>> ae571796c3e5edb65b3449bf4595636e541618d6
 };
 
 // Get available schedules with doctor information

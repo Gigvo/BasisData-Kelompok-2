@@ -21,6 +21,7 @@ module.exports.deletePasien = async (id) => {
 };
 
 module.exports.addOrEditPasien = async (obj, id = 0) => {
+<<<<<<< HEAD
   if (id === 0) {
     const [result] = await db.query(
       "INSERT INTO Pasien (nama_pasien, tanggal_lahir, jenis_kelamin, alamat, no_telepon, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -51,4 +52,20 @@ module.exports.addOrEditPasien = async (obj, id = 0) => {
     );
     return result.affectedRows;
   }
+=======
+  const [[[{ affectedRows }]]] = await db.query(
+    "CALL pasien_add_or_edit(?, ?, ?, ?, ?, ?, ?, ?)",
+    [
+      id,
+      obj.nama_pasien,
+      obj.tanggal_lahir,
+      obj.jenis_kelamin,
+      obj.alamat,
+      obj.no_telepon,
+      obj.email,
+      obj.password,
+    ]
+  );
+  return affectedRows;
+>>>>>>> ae571796c3e5edb65b3449bf4595636e541618d6
 };
