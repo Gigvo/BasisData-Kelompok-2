@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Appointments - Resepsionis</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .appointments-table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .appointments-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        .appointments-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .appointments-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .appointments-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-select {
+            padding: 6px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .btn-update {
+            padding: 6px 14px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .btn-update:hover {
+            background: #45a049;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <h2>Clinic System - Manage Appointments</h2>
+            </div>
+            <div class="navbar-menu">
+                <span id="userName"></span>
+                <a href="javascript:history.back()" style="color: white; text-decoration: none; margin-right: 15px;">Back</a>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <div class="dashboard-content">
+            <h1>All Appointments</h1>
+
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Filter by Status</label>
+                    <select id="filterStatus" onchange="filterAppointments()">
+                        <option value="">All Status</option>
+                        <option value="Menunggu">Menunggu</option>
+                        <option value="Dikonfirmasi">Dikonfirmasi</option>
+                        <option value="Selesai">Selesai</option>
+                        <option value="Dibatalkan">Dibatalkan</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Search Patient</label>
+                    <input type="text" id="searchPatient" placeholder="Patient name..." oninput="filterAppointments()">
+                </div>
+
+                <div class="filter-group">
+                    <label>Search Doctor</label>
+                    <input type="text" id="searchDoctor" placeholder="Doctor name..." oninput="filterAppointments()">
+                </div>
+            </div>
+
+            <div class="appointments-table-container">
+                <table class="appointments-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Specialization</th>
+                            <th>Date</th>
+                            <th>Schedule</th>
+                            <th>Complaint</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsTableBody">
+                        <tr>
+                            <td colspan="9" style="text-align: center;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        const token = localStorage.getItem('authToken');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token || user.role !== 'resepsionis') {
+            alert('Unauthorized access.');
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('userName').textContent = user.name;
+
+        let allAppointments = [];
+
+        async function loadAppointments() {
+            try {
+                const response = await authenticatedFetch('/resepsionis-admin/appointments');
+                allAppointments = await response.json();
+
+                displayStats();
+                displayAppointments(allAppointments);
+            } catch (error) {
+                console.error('Error loading appointments:', error);
+                alert('Failed to load appointments');
+            }
+        }
+
+        function displayStats() {
+            const stats = {
+                total: allAppointments.length,
+                menunggu: allAppointments.filter(a => a.status === 'Menunggu').length,
+                dikonfirmasi: allAppointments.filter(a => a.status === 'Dikonfirmasi').length,
+                selesai: allAppointments.filter(a => a.status === 'Selesai').length,
+                dibatalkan: allAppointments.filter(a => a.status === 'Dibatalkan').length
+            };
+
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-box">
+                    <div class="stat-number">${stats.total}</div>
+                    <div class="stat-label">Total Appointments</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${stats.menunggu}</div>
+                    <div class="stat-label">Menunggu</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${stats.dikonfirmasi}</div>
+                    <div class="stat-label">Dikonfirmasi</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${stats.selesai}</div>
+                    <div class="stat-label">Selesai</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${stats.dibatalkan}</div>
+                    <div class="stat-label">Dibatalkan</div>
+                </div>
+            `;
+        }
+
+        function displayAppointments(appointments) {
+            const tbody = document.getElementById('appointmentsTableBody');
+
+            if (appointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No appointments found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = appointments.map(apt => {
+                const date = new Date(apt.tanggal_janji);
+                const formattedDate = date.toLocaleDateString('id-ID');
+
+                return `
+                    <tr>
+                        <td>${apt.janjitemu_id}</td>
+                        <td>
+                            <strong>${apt.nama_pasien}</strong><br>
+                            <small>${apt.pasien_telepon}</small>
+                        </td>
+                        <td>${apt.nama_dokter || 'No doctor assigned'}</td>
+                        <td>${apt.spesialisasi || '-'}</td>
+                        <td>${formattedDate}</td>
+                        <td>${apt.hari}, ${apt.waktu_mulai}-${apt.waktu_selesai}</td>
+                        <td><small>${apt.keluhan.substring(0, 50)}...</small></td>
+                        <td>
+                            <select class="status-select" id="status-${apt.janjitemu_id}" data-original="${apt.status}">
+                                <option value="Menunggu" ${apt.status === 'Menunggu' ? 'selected' : ''}>Menunggu</option>
+                                <option value="Dikonfirmasi" ${apt.status === 'Dikonfirmasi' ? 'selected' : ''}>Dikonfirmasi</option>
+                                <option value="Selesai" ${apt.status === 'Selesai' ? 'selected' : ''}>Selesai</option>
+                                <option value="Dibatalkan" ${apt.status === 'Dibatalkan' ? 'selected' : ''}>Dibatalkan</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn-update" onclick="updateStatus(${apt.janjitemu_id})">Update</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterAppointments() {
+            const statusFilter = document.getElementById('filterStatus').value;
+            const patientSearch = document.getElementById('searchPatient').value.toLowerCase();
+            const doctorSearch = document.getElementById('searchDoctor').value.toLowerCase();
+
+            let filtered = allAppointments;
+
+            if (statusFilter) {
+                filtered = filtered.filter(a => a.status === statusFilter);
+            }
+
+            if (patientSearch) {
+                filtered = filtered.filter(a =>
+                    a.nama_pasien.toLowerCase().includes(patientSearch)
+                );
+            }
+
+            if (doctorSearch) {
+                filtered = filtered.filter(a =>
+                    a.nama_dokter && a.nama_dokter.toLowerCase().includes(doctorSearch)
+                );
+            }
+
+            displayAppointments(filtered);
+        }
+
+        async function updateStatus(appointmentId) {
+            const select = document.getElementById(`status-${appointmentId}`);
+            const newStatus = select.value;
+            const originalStatus = select.getAttribute('data-original');
+
+            if (newStatus === originalStatus) {
+                alert('Status has not changed');
+                return;
+            }
+
+            if (!confirm(`Update appointment status to "${newStatus}"?`)) {
+                select.value = originalStatus;
+                return;
+            }
+
+            try {
+                const response = await authenticatedFetch(`/resepsionis-admin/appointments/${appointmentId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Status updated successfully!');
+                    loadAppointments(); // Reload to get fresh data
+                } else {
+                    alert(data.message || 'Failed to update status');
+                    select.value = originalStatus;
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('Failed to update status');
+                select.value = originalStatus;
+            }
+        }
+
+        loadAppointments();
+    </script>
+</body>
+</html>

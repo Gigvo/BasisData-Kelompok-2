@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <nav class="navbar">
+        <div class="navbar-brand">
+          <h2>Clinic System - Admin Panel</h2>
+        </div>
+        <div class="navbar-menu">
+          <span id="userName"></span>
+          <span
+            style="
+              background: #ffc107;
+              color: #000;
+              padding: 5px 10px;
+              border-radius: 5px;
+              margin-left: 10px;
+              font-weight: bold;
+            "
+            >ADMIN</span
+          >
+          <button onclick="logout()" class="btn-logout">Logout</button>
+        </div>
+      </nav>
+
+      <div class="dashboard-content">
+        <div class="welcome-section">
+          <h1>Welcome, <span id="userFullName"></span></h1>
+          <p class="role-badge-large">Administrator</p>
+        </div>
+
+        <div class="info-card">
+          <h3>Admin Access</h3>
+          <p>
+            You have full administrative privileges to manage the clinic system.
+          </p>
+        </div>
+
+        <div class="actions-section">
+          <h3>Quick Actions</h3>
+          <div class="action-buttons">
+            <button
+              class="btn-action"
+              onclick="window.location.href='resepsionis-manage-appointments.html'"
+            >
+              View All Appointments
+            </button>
+            <button
+              class="btn-action"
+              onclick="window.location.href='resepsionis-create-appointment.html'"
+            >
+              Create New Appointment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+      const token = localStorage.getItem("authToken");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+      // Check if user is logged in and is admin
+      if (
+        !token ||
+        !user.name ||
+        user.role !== "resepsionis" ||
+        !user.isAdmin
+      ) {
+        alert("Unauthorized access. Admin privileges required.");
+        window.location.href = "index.html";
+      } else {
+        document.getElementById("userName").textContent = user.name;
+        document.getElementById("userFullName").textContent = user.name;
+      }
+    </script>
+  </body>
+</html>

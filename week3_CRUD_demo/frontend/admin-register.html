@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Registration - Secret</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .secret-notice {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .secret-notice h3 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+
+        .warning-text {
+            color: #dc3545;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="auth-box">
+            <h1>Admin Registration</h1>
+
+            <div class="secret-notice">
+                <h3>⚠️ Restricted Access</h3>
+                <p>This page is for creating the administrator account only.</p>
+                <p class="warning-text">Only ONE admin account can be created.</p>
+            </div>
+
+            <form id="adminRegisterForm">
+                <div class="form-group">
+                    <label for="secret_key">Secret Key *</label>
+                    <input type="password" id="secret_key" name="secret_key" required
+                           placeholder="Enter admin secret key">
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Get this key from the system administrator
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="nama_resepsionis">Full Name *</label>
+                    <input type="text" id="nama_resepsionis" name="nama_resepsionis" required
+                           placeholder="Enter admin full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required
+                           placeholder="Enter admin email">
+                </div>
+
+                <div class="form-group">
+                    <label for="no_telepon">Phone Number *</label>
+                    <input type="tel" id="no_telepon" name="no_telepon" required
+                           placeholder="Enter phone number">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" required
+                           placeholder="Enter password" minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password *</label>
+                    <input type="password" id="confirm_password" required
+                           placeholder="Confirm password" minlength="6">
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+
+                <button type="submit" class="btn-primary">Create Admin Account</button>
+            </form>
+
+            <div class="auth-footer">
+                <p><a href="index.html">Back to Home</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        document.getElementById('adminRegisterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const secret_key = document.getElementById('secret_key').value;
+            const nama_resepsionis = document.getElementById('nama_resepsionis').value;
+            const email = document.getElementById('email').value;
+            const no_telepon = document.getElementById('no_telepon').value;
+            const password = document.getElementById('password').value;
+            const confirm_password = document.getElementById('confirm_password').value;
+
+            const errorEl = document.getElementById('errorMessage');
+            const successEl = document.getElementById('successMessage');
+
+            // Hide previous messages
+            errorEl.style.display = 'none';
+            successEl.style.display = 'none';
+
+            // Validate passwords match
+            if (password !== confirm_password) {
+                errorEl.textContent = 'Passwords do not match';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register-admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        secret_key,
+                        nama_resepsionis,
+                        email,
+                        no_telepon,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successEl.textContent = 'Admin account created successfully! Redirecting to login...';
+                    successEl.style.display = 'block';
+
+                    // Clear form
+                    document.getElementById('adminRegisterForm').reset();
+
+                    // Redirect after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'resepsionis-login.html';
+                    }, 2000);
+                } else {
+                    errorEl.textContent = data.message || 'Registration failed';
+                    errorEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Admin registration error:', error);
+                errorEl.textContent = 'Network error. Please check if the server is running.';
+                errorEl.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
