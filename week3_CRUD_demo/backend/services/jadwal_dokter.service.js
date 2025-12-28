@@ -98,3 +98,25 @@ module.exports.getUnassignedAvailableSchedules = async () => {
   `);
   return rows;
 };
+
+// Get all schedules with doctor information (for resepsionis/admin)
+module.exports.getAllSchedulesWithDoctors = async () => {
+  const [rows] = await db.query(`
+    SELECT
+      jd.jadwal_id,
+      jd.hari,
+      jd.waktu_mulai,
+      jd.waktu_selesai,
+      jd.status,
+      d.dokter_id,
+      d.nama_dokter,
+      d.spesialisasi
+    FROM jadwal_dokter jd
+    LEFT JOIN menetapkan m ON jd.jadwal_id = m.jadwal_id
+    LEFT JOIN dokter d ON m.dokter_id = d.dokter_id
+    ORDER BY
+      FIELD(jd.hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'),
+      jd.waktu_mulai
+  `);
+  return rows;
+};

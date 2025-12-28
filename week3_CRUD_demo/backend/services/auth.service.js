@@ -227,3 +227,18 @@ module.exports.loginResepsionis = async (email, password) => {
     throw error;
   }
 };
+
+// Delete all admin accounts (for reset purposes)
+module.exports.deleteAllAdmins = async () => {
+  try {
+    const [result] = await db.query(
+      "DELETE FROM resepsionis WHERE is_admin = TRUE"
+    );
+
+    return {
+      deletedCount: result.affectedRows
+    };
+  } catch (error) {
+    throw error;
+  }
+};

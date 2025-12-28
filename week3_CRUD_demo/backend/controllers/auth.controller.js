@@ -195,4 +195,27 @@ router.post("/login-resepsionis", async (req, res) => {
   }
 });
 
+// Reset admin account (delete old admin to allow new registration)
+router.post("/reset-admin", async (req, res) => {
+  try {
+    const { secret_key } = req.body;
+
+    // Validate secret key
+    if (!secret_key || secret_key !== process.env.ADMIN_SECRET_KEY) {
+      return res.status(403).send({ message: "Invalid secret key" });
+    }
+
+    // Delete all admin accounts
+    const result = await authService.deleteAllAdmins();
+
+    res.status(200).send({
+      message: `Successfully removed ${result.deletedCount} admin account(s). You can now register a new admin.`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error("Reset admin error:", error);
+    res.status(500).send({ message: error.message || "Server error" });
+  }
+});
+
 module.exports = router;

@@ -135,3 +135,39 @@ module.exports.autoCompletePastAppointments = async () => {
     throw error;
   }
 };
+
+// Get all appointments with detailed information (for resepsionis/admin)
+module.exports.getAllAppointmentsDetailed = async () => {
+  const [rows] = await db.query(`
+    SELECT
+      jt.janjitemu_id,
+      jt.tanggal_janji,
+      jt.keluhan,
+      jt.status,
+      jt.createdAt,
+      jt.updatedAt,
+      p.pasien_id,
+      p.nama_pasien,
+      p.jenis_kelamin,
+      p.no_telepon AS pasien_telepon,
+      p.email AS pasien_email,
+      jd.jadwal_id,
+      jd.hari,
+      jd.waktu_mulai,
+      jd.waktu_selesai,
+      jd.status AS jadwal_status,
+      d.dokter_id,
+      d.nama_dokter,
+      d.spesialisasi,
+      r.resepsionis_id,
+      r.nama_resepsionis
+    FROM janji_temu jt
+    INNER JOIN pasien p ON jt.pasien_id = p.pasien_id
+    INNER JOIN jadwal_dokter jd ON jt.jadwal_id = jd.jadwal_id
+    LEFT JOIN menetapkan m ON jd.jadwal_id = m.jadwal_id
+    LEFT JOIN dokter d ON m.dokter_id = d.dokter_id
+    LEFT JOIN resepsionis r ON jt.resepsionis_id = r.resepsionis_id
+    ORDER BY jt.tanggal_janji DESC, jd.waktu_mulai DESC
+  `);
+  return rows;
+};

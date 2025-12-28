@@ -14,6 +14,7 @@ const menetapkanRoutes = require("./controllers/menetapkan.controller");
 const authRoutes = require("./controllers/auth.controller");
 const dokterScheduleRoutes = require("./controllers/dokter_schedule.controller");
 const pasienAppointmentRoutes = require("./controllers/pasien_appointment.controller");
+const resepsionisAdminRoutes = require("./controllers/resepsionis_admin.controller");
 
 //middleware
 app.use(cors());
@@ -24,6 +25,7 @@ app.use("/api/dokter-schedule", dokterScheduleRoutes);
 app.use("/api/pasien", pasienRoutes);
 app.use("/api/pasien-appointment", pasienAppointmentRoutes);
 app.use("/api/resepsionis", resepsionisRoutes);
+app.use("/api/resepsionis-admin", resepsionisAdminRoutes);
 app.use("/api/jadwaldokter", jadwalDokterRoutes);
 app.use("/api/janjitemu", janjiTemuRoutes);
 app.use("/api/menetapkan", menetapkanRoutes);
